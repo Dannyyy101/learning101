@@ -2,7 +2,7 @@ services:
   db:
     build:
       context: ./db
-    container_name: db
+    container_name: learning101_db
     ports:
       - "5433:5432"
     volumes:
