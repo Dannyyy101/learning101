@@ -1,0 +1,26 @@
+services:
+  db:
+    build:
+      context: ./db
+    container_name: learning101_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - learning101_db_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=${POSTGRES_USERNAME}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    networks:
+      - learning101-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USERNAME} -d production"]
+      interval: 5s
+      timeout: 2s
+      retries: 20
+
+networks:
+  learning101-network:
+    name: learning101-network
+
+volumes:
+  learning101_db_data:
