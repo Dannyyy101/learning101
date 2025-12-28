@@ -51,7 +51,16 @@ export async function updateSubjectById(subjectId: string, data: z.infer<typeof 
 }
 
 export async function getAllSubjects() {
-    return await prisma.subject.findMany({ include: { exercises: true, author: true } }) as Subject[]
+    return await prisma.subject.findMany({
+        include: {
+            exercises: {
+                include: {
+                    learnedExercises: true
+                }
+            },
+            author: true
+        }
+    }) as Subject[]
 }
 export async function deleteSubjectById(subjectId: string) {
     await prisma.subject.delete({ where: { "id": subjectId } })
