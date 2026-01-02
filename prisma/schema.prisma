@@ -43,11 +43,30 @@ model Exercise {
 }
 
 model Subject {
-  id        String     @id @default(cuid())
-  name      String
+  id    String @id @default(cuid())
+  name  String
+  color String
+
+  parentId String
+  parent   Subject   @relation("SubjectToSubject", fields: [parentId], references: [id], onDelete: Cascade)
+  children Subject[] @relation("SubjectToSubject")
+
+  sourceRelations SubjectRelations[] @relation("SourceSubjectRelation")
+  targetRelations SubjectRelations[] @relation("TargetSubjectRelation")
+
   authorId  String
   author    User       @relation(fields: [authorId], references: [id])
   exercises Exercise[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model SubjectRelations {
+  id       String  @id @default(uuid())
+  sourceId String
+  targetId String
+  source   Subject @relation("SourceSubjectRelation", fields: [sourceId], references: [id], onDelete: Cascade)
+  target   Subject @relation("TargetSubjectRelation", fields: [targetId], references: [id], onDelete: Cascade)
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 }
