@@ -47,8 +47,8 @@ model Subject {
   name  String
   color String
 
-  parentId String
-  parent   Subject   @relation("SubjectToSubject", fields: [parentId], references: [id], onDelete: Cascade)
+  parentId String?
+  parent   Subject?   @relation("SubjectToSubject", fields: [parentId], references: [id], onDelete: Cascade)
   children Subject[] @relation("SubjectToSubject")
 
   sourceRelations SubjectRelations[] @relation("SourceSubjectRelation")

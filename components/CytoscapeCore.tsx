@@ -4,11 +4,13 @@ import { useEffect, useRef } from 'react';
 import cytoscape from 'cytoscape';
 import fcose from 'cytoscape-fcose';
 // 1. Importiere den Hook für den App Router
-import { useRouter } from 'next/navigation'; 
+import { useRouter } from 'next/navigation';
+import { mapToNode } from '@/lib/cytoscape/mapper';
+import { DEFAULT_CHILD_SUBJECT, DEFAULT_SUBJECT } from '@/data/exampleSubjects';
 
 export default function MultiSolarSystem() {
   const containerRef = useRef<HTMLDivElement>(null);
-  
+
   // 2. Initialisiere den Router Hook
   const router = useRouter();
 
@@ -51,9 +53,9 @@ export default function MultiSolarSystem() {
         // --- SYSTEM 3 (Mit Link im Child) ---
         {
           data: {
-            id: 'sun3', label: 'Sun C', type: 'sun', color: '#0074D9', 
+            id: 'sun3', label: 'Sun C', type: 'sun', color: '#0074D9',
             children: [
-              { data: { id: 'p3a', type: 'planet', parentId: 'sun3', href: "/" } }, 
+              { data: { id: 'p3a', type: 'planet', parentId: 'sun3', href: "/" } },
               { data: { id: 'p3b', type: 'planet', parentId: 'sun3' } },
               { data: { id: 'p3c', type: 'planet', parentId: 'sun3' } },
               { data: { id: 'p3d', type: 'planet', parentId: 'sun3' } },
@@ -65,30 +67,36 @@ export default function MultiSolarSystem() {
               { data: { source: 'sun3', target: 'p3e' } },
               { data: { source: 'p1a', target: 'p3c' } },
               { data: { source: 'p1b', target: 'p3b' } },
-              { data: { source: 'p3a', target: 'sun4' } },
             ]
           }
         },
-        { data: { id: 'sun4', label: 'Sun D', type: 'sun', color: '#FFDC00' } },
-        { data: { id: 'p4a', type: 'planet', parentId: 'sun4' } },
-        { data: { id: 'p4b', type: 'planet', parentId: 'sun4' } },
-        { data: { source: 'sun4', target: 'p4a' } },
-        { data: { source: 'sun4', target: 'p4b' } },
-
+        mapToNode(DEFAULT_SUBJECT),
         { data: { id: 'center', label: 'Center', type: 'center', color: '#fff' } },
         { data: { source: 'center', target: 'sun1' } },
         { data: { source: 'center', target: 'sun2' } },
         { data: { source: 'center', target: 'sun3' } },
-      ],
+      ].flat(),
       style: [
         {
           selector: 'node',
           style: {
-            'label': 'data(id)',
+            'label': 'data(label)',
             'color': '#fff',
             'text-valign': 'center',
             'text-halign': 'center',
             'font-size': 10
+          }
+        },
+        {
+          selector: '[type = "PARENT"]',
+          style: {
+            'width': 60,
+            'height': 60,
+            'background-color': 'data(color)',
+            'font-size': 14,
+            'font-weight': 'bold',
+            'border-width': 2,
+            'border-color': '#333'
           }
         },
         {
@@ -104,19 +112,20 @@ export default function MultiSolarSystem() {
           }
         },
         {
-          selector: '[type = "planet"]',
+          selector: '[type = "CHILD"]',
           style: {
-            'width': 30,
-            'height': 30,
+            'width': 45,
+            'height': 45,
+            'color': "#000000",
             'background-color': '#888'
           }
         },
         {
           selector: 'node[href]',
           style: {
-             'border-width': 2,
-             'border-color': '#fff',
-             'background-color': '#001f3f'
+            'border-width': 2,
+            'border-color': '#fff',
+            'background-color': '#001f3f'
           }
         },
         {
@@ -140,13 +149,13 @@ export default function MultiSolarSystem() {
     });
 
     // --- EVENT LISTENER MIT ROUTER ---
-    
+
     cy.on('tap', 'node', function (e) {
       const node = e.target;
       const data = node.data();
-      
+
       // 1. Logik: Kinder ausklappen
-      if (data.children) {
+      if (data.children && data.children.length > 0) {
         cy.add(data.children);
         node.data('children', null); // Daten löschen, damit sie nicht doppelt hinzugefügt werden
         cy.layout(layoutConfig).run();
@@ -165,13 +174,13 @@ export default function MultiSolarSystem() {
         }
       }
     });
-    
+
     // Cursor Logik
     cy.on('mouseover', 'node', () => {
-        if(containerRef.current) containerRef.current.style.cursor = 'pointer';
+      if (containerRef.current) containerRef.current.style.cursor = 'pointer';
     });
     cy.on('mouseout', 'node', () => {
-        if(containerRef.current) containerRef.current.style.cursor = 'default';
+      if (containerRef.current) containerRef.current.style.cursor = 'default';
     });
 
     return () => {
@@ -179,5 +188,5 @@ export default function MultiSolarSystem() {
     };
   }, [router]); // <--- Router als Dependency hinzufügen
 
-  return <div ref={containerRef} className='w-screen h-screen'/>;
+  return <div ref={containerRef} className='w-screen h-screen' />;
 }
